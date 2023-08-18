@@ -18,7 +18,7 @@ function spellInfo:Handle(event, args)
 
     spellInfo.isOff = false;
     spellInfo.spell.castTime = ({ GetSpellInfo(args.spellId) })[7] / 1000;
-    spellInfo.spell.name = event .. " / " .. args.sourceName .. " / " .. args.spellName;
+    spellInfo.spell.name = args.sourceName .. " / " .. args.spellName;
 end
 
 function spellInfo:OnUpdate(elapsed)

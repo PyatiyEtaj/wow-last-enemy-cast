@@ -42,7 +42,7 @@ function Lib.frame:ADDON_LOADED()
     Lib.spellFrame:SetAlpha(1);
     Lib.spellFrame:SetPoint("CENTER", 0, -100);
     Lib.spellFrame.text = Lib.spellFrame:CreateFontString(nil, "ARTWORK");
-    Lib.spellFrame.text:SetFont("Fonts\\ARIALN.ttf", 13, "OUTLINE");
+    Lib.spellFrame.text:SetFont("Fonts\\ARIALN.ttf", 18, "THICKOUTLINE");
     Lib.spellFrame.text:SetPoint("CENTER", 0, 0);
     Lib.spellFrame:Show();
 
