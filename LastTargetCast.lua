@@ -1,65 +1,56 @@
-local version = 1.1
-local lib = LibStub:NewLibrary("LastEnemyCast-"..version, 1);
+local version = 1.2
+Lib = LibStub:NewLibrary("LastEnemyCast-"..version, 1);
 
-if not lib.frame then
-    lib.frame = CreateFrame("Frame");
+Lib.registered = {}
+
+if not Lib.frame then
+    Lib.frame = CreateFrame("Frame");
 end
 
-function lib:Init(self)
-    if not lib.inited then lib.inited = true else return end
+function Lib:Log(text)
+    SELECTED_CHAT_FRAME:AddMessage(text);
+end
 
-    lib.frame:RegisterEvent('ADDON_LOADED')
-    lib.frame:SetScript('OnEvent', function(self, event, ...)
+function Lib.NewOnUpdate(self, elapsed)
+    for i, v in pairs(Lib.registered) do
+        if v.OnUpdate then
+            v:OnUpdate(elapsed)
+        end
+    end
+end
+
+function Lib:Init()
+    if not Lib.inited then Lib.inited = true else return end
+
+    Lib.frame:RegisterEvent('ADDON_LOADED')
+    Lib.frame:SetScript('OnEvent', function(self, event, ...)
         if self[event] then
             self[event](self, ...)
         end
     end)
-
-    function lib:Log(text)
-        SELECTED_CHAT_FRAME:AddMessage(text);
-    end
-
-    function lib.frame:ADDON_LOADED(self)
-        lib.frame:UnregisterEvent('ADDON_LOADED')
-
-        lib:Log("Init LastEnemyCast v"..version);
-
-        lib.spellFrame = CreateFrame("Frame", nil, UIParent);
-        lib.spellFrame:SetWidth(100);
-        lib.spellFrame:SetHeight(100);
-        lib.spellFrame:SetAlpha(1);
-        lib.spellFrame:SetPoint("CENTER", 0, -100);
-        lib.spellFrame.text = lib.spellFrame:CreateFontString(nil, "ARTWORK");
-        lib.spellFrame.text:SetFont("Fonts\\ARIALN.ttf", 13, "OUTLINE");
-        lib.spellFrame.text:SetPoint("CENTER", 0, 0);
-        lib.spellFrame:Hide();
-
-        lib.frame:RegisterEvent("PLAYER_TARGET_CHANGED");
-        lib.frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
-    end
+    Lib.frame:SetScript('OnUpdate', Lib.NewOnUpdate)
 end
 
-function lib.frame:PLAYER_TARGET_CHANGED(self)
-    if (not UnitIsFriend("player", "target")) then
-        local id = UnitGUID("target");
-        if id then
-            lib.lastTargetId = id
-            lib.spellFrame.text:SetText("");
-            lib:Log("remember " .. lib.lastTargetId)
-        end
-    end
+function Lib.frame:ADDON_LOADED()
+    Lib.frame:UnregisterEvent('ADDON_LOADED')
+
+    Lib:Log("Init LastEnemyCast v"..version);
+
+    Lib.spellFrame = CreateFrame("Frame", nil, UIParent);
+    Lib.spellFrame:SetWidth(100);
+    Lib.spellFrame:SetHeight(100);
+    Lib.spellFrame:SetAlpha(1);
+    Lib.spellFrame:SetPoint("CENTER", 0, -100);
+    Lib.spellFrame.text = Lib.spellFrame:CreateFontString(nil, "ARTWORK");
+    Lib.spellFrame.text:SetFont("Fonts\\ARIALN.ttf", 13, "OUTLINE");
+    Lib.spellFrame.text:SetPoint("CENTER", 0, 0);
+    Lib.spellFrame:Show();
+
+    Lib.frame:RegisterEvent("PLAYER_TARGET_CHANGED");
+    Lib.frame:RegisterEvent("COMBAT_LOG_EVENT_UNFILTERED");
 end
 
-function HandleEvent(event, args)
-    if not event:starts("SPELL") then return end
-
-    if not lib.lastTargetId or not args.sourceGUID or lib.lastTargetId ~= args.sourceGUID then return end
-
-    lib.spellFrame:Show();
-    lib.spellFrame.text:SetText(event .. " / " .. args.sourceName .. " / " .. args.spellName);
-end
-
-function lib.frame:COMBAT_LOG_EVENT_UNFILTERED(timestamp, event, sourceGUID, sourceName, sourceFlags, destGUID, destName,
+function Lib.frame:COMBAT_LOG_EVENT_UNFILTERED(timestamp, event, sourceGUID, sourceName, sourceFlags, destGUID, destName,
                                                destFlags, ...)
     local args = {}
     args.timestamp = timestamp
@@ -176,11 +167,38 @@ function lib.frame:COMBAT_LOG_EVENT_UNFILTERED(timestamp, event, sourceGUID, sou
         args.amount, args.school, args.resisted, args.blocked, args.absorbed, args.critical, args.glancing, args.crushing =
             select(4, ...)
     end
-    return HandleEvent(event, args)
+
+    return Lib:HandleCLEUSubEvent(event, args)
+end
+
+function Lib.frame:PLAYER_TARGET_CHANGED(self)
+    if (not UnitIsFriend("player", "target")) then
+        local id = UnitGUID("target");
+        if id then
+            Lib.lastTargetId = id;
+            Lib.spellFrame.text:SetText("");
+        end
+    end
+end
+
+function Lib:Register(eventInfo, func)
+    if Lib.registered[eventInfo.name] then return false end
+
+    Lib.registered[eventInfo.name] = eventInfo
+
+    return true
+end
+
+function Lib:HandleCLEUSubEvent(event, args)
+    for i, v in pairs(Lib.registered) do
+        if event:starts(v.subscribe) then
+            v:Handle(event, args);
+        end
+    end
 end
 
 function string.starts(String, Start)
     return string.sub(String, 1, string.len(Start)) == Start;
 end
 
-lib:Init()
+Lib:Init()
