@@ -1,9 +1,0 @@
-## Interface: 30300
-## Title: LEC
-## Notes: Show cast of last targeted enemy
-## Version 1.2
-
-LastTargetCast.lua
-SpellHandler.lua
-
-embeds.xml

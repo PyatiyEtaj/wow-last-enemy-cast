@@ -1,0 +1,9 @@
+## Interface: 30300
+## Title: LastEnemyCastTime
+## Notes: Show last targeted enemy cast time
+## Version 1.2
+
+LastEnemyCast.lua
+SpellHandler.lua
+
+embeds.xml
