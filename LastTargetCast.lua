@@ -1,4 +1,5 @@
-local lib = LibStub:NewLibrary("LastEnemyCast-1.0", 1);
+local version = 1.1
+local lib = LibStub:NewLibrary("LastEnemyCast-"..version, 1);
 
 if not lib.frame then
     lib.frame = CreateFrame("Frame");
@@ -6,7 +7,7 @@ end
 
 function lib:Init(self)
     if not lib.inited then lib.inited = true else return end
-    
+
     lib.frame:RegisterEvent('ADDON_LOADED')
     lib.frame:SetScript('OnEvent', function(self, event, ...)
         if self[event] then
@@ -21,7 +22,7 @@ function lib:Init(self)
     function lib.frame:ADDON_LOADED(self)
         lib.frame:UnregisterEvent('ADDON_LOADED')
 
-        lib:Log("Init LastEnemyCast v1.0");
+        lib:Log("Init LastEnemyCast v"..version);
 
         lib.spellFrame = CreateFrame("Frame", nil, UIParent);
         lib.spellFrame:SetWidth(100);
