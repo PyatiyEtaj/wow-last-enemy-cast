@@ -34,6 +34,6 @@ function spellInfo:OnUpdate(elapsed)
     Lib.spellFrame.text:SetText(spellInfo.spell.name .. " / " .. string.format("%.1f", spellInfo.spell.castTime));
 end
 
-if Lib:Register(spellInfo) then
-    print("successful register " .. spellInfo.name)
+if not Lib:Register(spellInfo) then
+    Lib:Log("cant register " .. spellInfo.name)
 end
